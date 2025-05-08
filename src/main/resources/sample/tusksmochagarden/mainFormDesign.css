@@ -1,0 +1,78 @@
+.header{
+    -fx-background-color: linear-gradient(to bottom right, #E4B7A0, #A45C40); /* Updated to match login-btn gradient */
+    -fx-border-color: #fff;
+    -fx-border-width: 0 0 .8px 0;
+}
+
+.nav-form{
+    -fx-background-color: linear-gradient(to bottom right, #C38370, #E4B7A0); /* Updated to match gradient */
+}
+
+.nav-btn{
+    -fx-background-color: transparent;
+    -fx-border-color: #fff;
+    -fx-border-width: .4px;
+    -fx-cursor: hand;
+    -fx-text-fill: #fff;
+    -fx-font-size: 14px;
+}
+.nav-btn:hover{
+    -fx-background-color: #E4B7A0; /* Updated to match the hover state of login-btn */
+    -fx-text-fill: #000;
+}
+
+.logout{
+    -fx-background-color: #C38370; /* Updated to match the login form's color palette */
+    -fx-padding: 5px;
+    -fx-cursor: hand;
+    -fx-background-radius: 50px;
+}
+.logout:hover{
+    -fx-background-color: #A45C40; /* Updated hover color to match the palette */
+}
+
+.shadow{
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 5,0,0,0);
+}
+
+.white-bg{
+    -fx-background-color: #fff;
+}
+
+.radius{
+    -fx-background-radius: 8px;
+}
+
+.transparent{
+    -fx-background-color: transparent;
+}
+
+.table-view{
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-border-color: linear-gradient(to bottom right, #C38370, #E4B7A0); /* Updated to match the login form gradient */
+    -fx-border-radius: 5px;
+    -fx-border-width: 1.5px;
+}
+.table-view .column-header-background{
+    -fx-background-color: linear-gradient(to bottom right, #C38370, #E4B7A0); /* Updated to match the login form gradient */
+    -fx-background-radius: 5px 5px 0 0;
+    -fx-background-insets: 0 0 0 0;
+}
+.table-view .column-header, .filter{
+    -fx-background-color: transparent;
+    -fx-size: 40px;
+}
+.table-view .column-header .label{
+    -fx-text-fill: #fff;
+}
+
+.btn{
+    -fx-background-color: linear-gradient(to bottom right, #E4B7A0, #A45C40); /* Updated to match login-btn gradient */
+    -fx-cursor: hand;
+    -fx-text-fill: #fff;
+    -fx-font-size: 14px;
+}
+.btn:hover{
+    -fx-background-color: linear-gradient(to bottom right, #E4D4C8, #A45C40); /* Updated to match login-btn hover state */
+}
