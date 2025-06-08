@@ -12,7 +12,7 @@ public class TestDatabaseConnection {
 
             // Establish the connection
             Connection connect = DriverManager.getConnection(
-                    "jdbc:mysql://127.0.0.1:3306/tusks_mocha_garden", "root", ""); // Adjust the URL, username, and password as needed
+                    "jdbc:mysql://127.0.0.1:3306/tusks_mocha_garden", "root", "MySql2025"); // Adjust the URL, username, and password as needed
 
             if (connect != null) {
                 System.out.println("Database connection successful!");
