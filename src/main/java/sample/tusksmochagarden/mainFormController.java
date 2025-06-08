@@ -26,6 +26,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,7 +41,7 @@ public class mainFormController implements Initializable {
     private Label username, dashboard_NC, dashboard_TI, dashboard_TotalI, dashboard_NSP, menu_total, menu_change;
 
     @FXML
-    private Button dashboard_btn, inventory_btn, menu_btn, customers_btn, logout_btn, menu_receiptBtn;
+    private Button dashboard_btn, inventory_btn, menu_btn, customers_btn, logout_btn, menu_receiptBtn, menu_payBtn, menu_removeBtn;
 
     @FXML
     private TableView<productData> inventory_tableView, menu_tableView;
@@ -207,15 +208,17 @@ public class mainFormController implements Initializable {
 
     // Inventory methods
     public void inventoryAddBtn() {
-        if (inventory_productID.getText().isEmpty() || 
-            inventory_productName.getText().isEmpty() || 
-            inventory_type.getSelectionModel().getSelectedItem() == null || 
-            inventory_stock.getText().isEmpty() || 
-            inventory_price.getText().isEmpty() || 
-            inventory_status.getSelectionModel().getSelectedItem() == null || 
-            inventory_imageView.getImage() == null) {
-            
-            showAlert(Alert.AlertType.ERROR, "Please fill all blank fields");
+        // Enhanced form validation
+        if (!validateInventoryForm()) {
+            return;
+        }
+        
+        // Validate numeric inputs
+        try {
+            Integer.parseInt(inventory_stock.getText());
+            Double.parseDouble(inventory_price.getText().replace("$", ""));
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, "Stock must be a whole number and price must be a valid number");
             return;
         }
         
@@ -236,14 +239,25 @@ public class mainFormController implements Initializable {
                 showAlert(Alert.AlertType.ERROR, inventory_productID.getText() + " is already taken");
             } else {
                 prepare = connect.prepareStatement(insertProduct);
-                prepare.setString(1, inventory_productID.getText());
-                prepare.setString(2, inventory_productName.getText());
+                prepare.setString(1, inventory_productID.getText().trim());
+                prepare.setString(2, inventory_productName.getText().trim());
                 prepare.setString(3, inventory_type.getSelectionModel().getSelectedItem());
-                prepare.setString(4, inventory_stock.getText());
+                
+                // Ensure stock is a positive integer
+                int stock = Integer.parseInt(inventory_stock.getText());
+                if (stock < 0) {
+                    showAlert(Alert.AlertType.ERROR, "Stock cannot be negative");
+                    return;
+                }
+                prepare.setInt(4, stock);
                 
                 // Format price to ensure it's a valid decimal
                 double price = Double.parseDouble(inventory_price.getText().replace("$", ""));
-                prepare.setString(5, String.valueOf(price));
+                if (price <= 0) {
+                    showAlert(Alert.AlertType.ERROR, "Price must be greater than zero");
+                    return;
+                }
+                prepare.setDouble(5, price);
                 
                 prepare.setString(6, inventory_status.getSelectionModel().getSelectedItem());
                 
@@ -255,17 +269,65 @@ public class mainFormController implements Initializable {
                 
                 // Get current date for the product
                 java.sql.Date sqlDate = new java.sql.Date(new java.util.Date().getTime());
-                prepare.setString(8, String.valueOf(sqlDate));
+                prepare.setDate(8, sqlDate);
                 
                 prepare.executeUpdate();
                 
-                showAlert(Alert.AlertType.INFORMATION, "Successfully Added!");
+                showAlert(Alert.AlertType.INFORMATION, "Product added successfully!");
                 inventoryShowData();
                 inventoryClearBtn();
             }
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Database error: " + e.getMessage());
+            e.printStackTrace();
         } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "An unexpected error occurred: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Validates inventory form inputs
+     * @return true if all inputs are valid, false otherwise
+     */
+    private boolean validateInventoryForm() {
+        if (inventory_productID.getText().isEmpty() || 
+            inventory_productName.getText().isEmpty() || 
+            inventory_type.getSelectionModel().getSelectedItem() == null || 
+            inventory_stock.getText().isEmpty() || 
+            inventory_price.getText().isEmpty() || 
+            inventory_status.getSelectionModel().getSelectedItem() == null) {
+            
+            showAlert(Alert.AlertType.ERROR, "Please fill all blank fields");
+            return false;
+        }
+        
+        // Validate product ID format (alphanumeric only)
+        if (!inventory_productID.getText().matches("[a-zA-Z0-9]+")) {
+            showAlert(Alert.AlertType.ERROR, "Product ID must contain only letters and numbers");
+            return false;
+        }
+        
+        // Check that product name isn't just whitespace
+        if (inventory_productName.getText().trim().isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Product name cannot be empty");
+            return false;
+        }
+        
+        // If no image is selected, confirm with user
+        if (inventory_imageView.getImage() == null) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("No Image Selected");
+            alert.setHeaderText(null);
+            alert.setContentText("You haven't selected a product image. Do you want to continue without an image?");
+            
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.CANCEL) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     public void inventoryUpdateBtn() {
@@ -630,7 +692,82 @@ public class mainFormController implements Initializable {
     }
 
     public void menuReceiptBtn() {
-        showAlert(Alert.AlertType.INFORMATION, "Receipt functionality not yet implemented.");
+        if (menuOrderListData.isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "No order items to print receipt for!");
+            return;
+        }
+        
+        try {
+            // Create receipt content
+            StringBuilder receipt = new StringBuilder();
+            receipt.append("===========================================\n");
+            receipt.append("             TUSKS MOCHA GARDEN            \n");
+            receipt.append("===========================================\n");
+            receipt.append("Date: ").append(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date())).append("\n");
+            receipt.append("Cashier: ").append(data.username).append("\n");
+            receipt.append("Customer ID: ").append(data.cID).append("\n");
+            receipt.append("-------------------------------------------\n");
+            receipt.append(String.format("%-20s %-8s %-10s\n", "ITEM", "QTY", "PRICE"));
+            receipt.append("-------------------------------------------\n");
+            
+            // Add each item
+            for (productData item : menuOrderListData) {
+                receipt.append(String.format("%-20s %-8d $%-10.2f\n", 
+                    truncateString(item.getProductName(), 20),
+                    item.getQuantity(),
+                    item.getPrice()));
+            }
+            
+            receipt.append("-------------------------------------------\n");
+            receipt.append(String.format("TOTAL%33s\n", String.format("$%.2f", totalP)));
+            
+            // Add payment info if available
+            if (!menu_amount.getText().isEmpty()) {
+                double amount = Double.parseDouble(menu_amount.getText().replace("$", "").replace(",", "").trim());
+                double change = amount - totalP;
+                
+                receipt.append(String.format("AMOUNT PAID%28s\n", String.format("$%.2f", amount)));
+                receipt.append(String.format("CHANGE%32s\n", String.format("$%.2f", change)));
+            }
+            
+            receipt.append("===========================================\n");
+            receipt.append("          THANK YOU FOR YOUR VISIT!        \n");
+            receipt.append("===========================================\n");
+            
+            // Show receipt in a dialog
+            Alert receiptDialog = new Alert(Alert.AlertType.INFORMATION);
+            receiptDialog.setTitle("Receipt");
+            receiptDialog.setHeaderText("Tusks Mocha Garden Receipt");
+            
+            // Create a monospaced text area for the receipt
+            javafx.scene.control.TextArea textArea = new javafx.scene.control.TextArea(receipt.toString());
+            textArea.setEditable(false);
+            textArea.setWrapText(false);
+            textArea.setFont(javafx.scene.text.Font.font("Monospaced", 12));
+            textArea.setPrefWidth(400);
+            textArea.setPrefHeight(500);
+            
+            receiptDialog.getDialogPane().setContent(textArea);
+            receiptDialog.showAndWait();
+            
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error generating receipt: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Truncates a string to a specified length
+     * 
+     * @param str The string to truncate
+     * @param length The maximum length
+     * @return The truncated string
+     */
+    private String truncateString(String str, int length) {
+        if (str == null || str.length() <= length) {
+            return str;
+        }
+        return str.substring(0, length - 3) + "...";
     }
 
     public void menuShowOrderData() {
@@ -813,26 +950,86 @@ public class mainFormController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Initialize the inventory type and status combo boxes
-        ObservableList<String> typeList = FXCollections.observableArrayList("Beverage", "Meal", "Dessert", "Others");
-        inventory_type.setItems(typeList);
+        try {
+            // Initialize the inventory type and status combo boxes
+            ObservableList<String> typeList = FXCollections.observableArrayList("Beverage", "Meal", "Dessert", "Others");
+            inventory_type.setItems(typeList);
+            
+            ObservableList<String> statusList = FXCollections.observableArrayList("Available", "Unavailable");
+            inventory_status.setItems(statusList);
+            
+            // Initialize the data collections
+            menuOrderListData = FXCollections.observableArrayList();
+            
+            // Configure UI components
+            menu_payBtn.setDisable(true); // Disable payment button until valid amount entered
+            resetPaymentFields();
+            
+            // Set up numeric-only text formatters for numeric fields
+            setupNumericOnlyFields();
+            
+            // Load initial data
+            displayUsername();
+            loadDashboardData();
+            inventoryShowData();
+            menuDisplayCard();
+            customersShowData();
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error initializing application: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Sets up text formatters to only allow numeric input in appropriate fields
+     */
+    private void setupNumericOnlyFields() {
+        // Only allow integers in the stock field
+        inventory_stock.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                inventory_stock.setText(newValue.replaceAll("[^\\d]", ""));
+            }
+        });
         
-        ObservableList<String> statusList = FXCollections.observableArrayList("Available", "Unavailable");
-        inventory_status.setItems(statusList);
+        // Allow decimal numbers in price field
+        inventory_price.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*(\\.\\d{0,2})?")) {
+                inventory_price.setText(oldValue);
+            }
+        });
         
-        // Initialize the data
-        menuOrderListData = FXCollections.observableArrayList();
-        
-        displayUsername();
-        dashboardDisplayNC();
-        dashboardDisplayTI();
-        dashboardTotalI();
-        dashboardNSP();
-        dashboardIncomeChart();
-        dashboardCustomerChart();
-        inventoryShowData();
-        menuDisplayCard();
-        customersShowData();
+        // Allow decimal numbers in amount field
+        menu_amount.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*(\\.\\d{0,2})?")) {
+                menu_amount.setText(oldValue);
+            }
+        });
+    }
+    
+    /**
+     * Loads all dashboard data elements
+     */
+    private void loadDashboardData() {
+        try {
+            dashboardDisplayNC();
+            dashboardDisplayTI();
+            dashboardTotalI();
+            dashboardNSP();
+            dashboardIncomeChart();
+            dashboardCustomerChart();
+        } catch (Exception e) {
+            System.err.println("Error loading dashboard data: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Reset payment fields when order changes
+     */
+    private void resetPaymentFields() {
+        if (menu_amount != null) menu_amount.clear();
+        if (menu_change != null) menu_change.setText("$0.00");
+        if (menu_payBtn != null) menu_payBtn.setDisable(true);
     }
 
     private void showAlert(Alert.AlertType alertType, String content) {
@@ -843,24 +1040,53 @@ public class mainFormController implements Initializable {
         alert.showAndWait();
     }
 
+    /**
+     * Handles the amount input and calculates change
+     * 
+     * @param actionEvent the event that triggered the method
+     */
     public void menuAmount(ActionEvent actionEvent) {
+        // If no order or no amount entered, do nothing
         if (menu_amount.getText().isEmpty() || totalP == 0) {
             return;
         }
         
+        // Process and validate the payment amount
         try {
-            double amount = Double.parseDouble(menu_amount.getText());
-            if (amount < totalP) {
-                showAlert(Alert.AlertType.ERROR, "Invalid payment amount!");
+            // Remove any currency symbol and whitespace
+            String cleanAmount = menu_amount.getText()
+                .replace("$", "")
+                .replace(",", "")
+                .trim();
+                
+            // Validate input is a proper number
+            if (!cleanAmount.matches("\\d+(\\.\\d{1,2})?")) {
+                showAlert(Alert.AlertType.ERROR, "Please enter a valid amount (e.g., 25.50)");
                 return;
             }
             
-            // Calculate and show the change
+            double amount = Double.parseDouble(cleanAmount);
+            
+            // Validate amount is sufficient
+            if (amount < totalP) {
+                showAlert(Alert.AlertType.ERROR, 
+                    String.format("Payment amount $%.2f is less than the total $%.2f", amount, totalP));
+                return;
+            }
+            
+            // Calculate and show the change with proper formatting
             double change = amount - totalP;
             menu_change.setText(String.format("$%.2f", change));
+            
+            // Enable pay button now that a valid amount is entered
+            menu_payBtn.setDisable(false);
+            
         } catch (NumberFormatException e) {
             showAlert(Alert.AlertType.ERROR, "Please enter a valid number!");
             menu_amount.clear();
+            menu_change.setText("$0.00");
+            menu_payBtn.setDisable(true);
         }
     }
+    
 }

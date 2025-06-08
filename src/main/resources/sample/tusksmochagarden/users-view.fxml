@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<VBox spacing="10" alignment="CENTER" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.controllers.UsersController">
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10" />
+    </padding>
+
+    <TableView fx:id="userTable" prefWidth="435">
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID">
+                <cellValueFactory><PropertyValueFactory property="id"/></cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="usernameColumn" prefWidth="150.0" text="Username">
+                <cellValueFactory><PropertyValueFactory property="username"/></cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="passwordColumn" prefWidth="150.0" text="Password">
+                <cellValueFactory><PropertyValueFactory property="password"/></cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="isAdminColumn" prefWidth="100" text="Is Admin?">
+                <cellValueFactory><PropertyValueFactory property="isAdmin"/></cellValueFactory>
+            </TableColumn>
+        </columns>
+
+    </TableView>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="addUserButton" text="Add User" onAction="#addUser"></Button>
+        <Button fx:id="removeUserButton" text="Remove Selected User" onAction="#removeUser"></Button>
+        <Button fx:id="editUserButton" text="Edit User" onAction="#editUser"></Button>
+        <Button fx:id="backToLandingButton" text="Back To Landing" onAction="#backToLanding"></Button>
+   </HBox>
+    <Label fx:id="usersErrorLabel"/>
+</VBox>
