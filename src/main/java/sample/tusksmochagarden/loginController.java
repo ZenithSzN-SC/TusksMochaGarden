@@ -35,7 +35,7 @@ public class loginController implements Initializable {
     private PasswordField si_password, su_password, np_newPassword, np_confirmPassword;
 
     @FXML
-    private ComboBox<String> su_question, fp_question;
+    private ComboBox<String> su_question, fp_question, su_admin;
 
     @FXML
     private Button si_loginBtn, su_signupBtn, fp_proceedBtn, np_changePassBtn, fp_back, np_back, side_CreateBtn, side_alreadyHave;
@@ -79,19 +79,25 @@ public class loginController implements Initializable {
             return;
         }
 
-        String selectData = "SELECT username, password FROM employee WHERE username = ? AND password = ?";
+        // Improved security: fetch user by username only, then verify password hash
+        String selectData = "SELECT username, password FROM employee WHERE username = ?";
         connect = Database.connectDB();
 
         try {
             prepare = connect.prepareStatement(selectData);
             prepare.setString(1, username);
-            prepare.setString(2, password);
             result = prepare.executeQuery();
-
+            
             if (result.next()) {
-                data.username = username;
-                showAlert(Alert.AlertType.INFORMATION, "Information Message", "Successfully Logged In!");
-                loadMainForm();
+                String storedHash = result.getString("password");
+                // Verify password hash
+                if (verifyPassword(password, storedHash)) {
+                    data.username = username;
+                    showAlert(Alert.AlertType.INFORMATION, "Information Message", "Successfully Logged In!");
+                    loadMainForm();
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Error Message", "Incorrect Username/Password");
+                }
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error Message", "Incorrect Username/Password");
             }
@@ -100,6 +106,25 @@ public class loginController implements Initializable {
         } finally {
             closeDatabaseResources();
         }
+    }
+    
+    /**
+     * Verify if a password matches the stored hash
+     * @param password the plaintext password to check
+     * @param storedHash the stored password hash
+     * @return true if the password matches, false otherwise
+     */
+    private boolean verifyPassword(String password, String storedHash) {
+        // Generate hash of the provided password
+        String passwordHash = hashPassword(password);
+        // Compare with stored hash (in a real app, use constant-time comparison)
+        return passwordHash.equals(storedHash);
+    }
+    
+    @FXML
+    private void switchForgotPass(ActionEvent event) {
+        si_loginForm.setVisible(false);
+        fp_questionForm.setVisible(true);
     }
 
     @FXML
@@ -174,9 +199,12 @@ public class loginController implements Initializable {
         connect = Database.connectDB();
 
         try {
+            // Use hashed password for security
+            String hashedPassword = hashPassword(np_newPassword.getText());
+            
             String updatePass = "UPDATE employee SET password = ?, question = ?, answer = ? WHERE username = ?";
             prepare = connect.prepareStatement(updatePass);
-            prepare.setString(1, np_newPassword.getText());
+            prepare.setString(1, hashedPassword);
             prepare.setString(2, fp_question.getSelectionModel().getSelectedItem());
             prepare.setString(3, fp_answer.getText());
             prepare.setString(4, fp_username.getText());
@@ -219,12 +247,6 @@ public class loginController implements Initializable {
         slider.play();
     }
 
-    @FXML
-    private void switchForgotPass(ActionEvent event) {
-        si_loginForm.setVisible(false);
-        fp_questionForm.setVisible(true);
-    }
-
     private void showSignUpForm() {
         side_alreadyHave.setVisible(true);
         side_CreateBtn.setVisible(false);
@@ -261,16 +283,47 @@ public class loginController implements Initializable {
     }
 
     private void registerUser() throws SQLException {
-        String regData = "INSERT INTO employee (username, password, question, answer, date) VALUES(?,?,?,?,?)";
+        String regData = "INSERT INTO employee (username, password, question, answer, hire_date) VALUES(?,?,?,?,?)";
         prepare = connect.prepareStatement(regData);
         prepare.setString(1, su_username.getText());
-        prepare.setString(2, su_password.getText());
+        
+        // Hash the password for security
+        String hashedPassword = hashPassword(su_password.getText());
+        prepare.setString(2, hashedPassword);
+        
         prepare.setString(3, su_question.getSelectionModel().getSelectedItem());
         prepare.setString(4, su_answer.getText());
-
+        
         java.sql.Date sqlDate = new java.sql.Date(new Date().getTime());
         prepare.setDate(5, sqlDate);
         prepare.executeUpdate();
+    }
+    
+    /**
+     * Hash a password for secure storage
+     * @param password the plaintext password to hash
+     * @return a secure hash of the password
+     */
+    private String hashPassword(String password) {
+        try {
+            // In a real production app, use a proper password hashing library like BCrypt
+            // This is a simple implementation using SHA-256 for demonstration
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(password.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            
+            // Convert bytes to hex string
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            // Fall back to plaintext if hashing fails
+            return password;
+        }
     }
 
     private boolean isUsernameTaken(String username) throws SQLException {
