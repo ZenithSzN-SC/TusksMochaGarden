@@ -55,6 +55,10 @@ public class loginController implements Initializable {
         ObservableList<String> listData = FXCollections.observableArrayList(questionList);
         su_question.setItems(listData);
         fp_question.setItems(listData);
+        
+        // Initialize admin selection
+        ObservableList<String> adminList = FXCollections.observableArrayList("No", "Yes");
+        su_admin.setItems(adminList);
     }
 
     @FXML
@@ -65,9 +69,10 @@ public class loginController implements Initializable {
         // Bypass the database connection for a test user
         if ("testuser".equals(username) && "testpass".equals(password)) {
             data.username = "testuser";
+            data.isAdmin = false; // Set as non-admin for testing
             showAlert(Alert.AlertType.INFORMATION, "Information Message", "Successfully Logged In as Test User!");
             try {
-                loadMainForm();
+                loadMainForm(); // Non-admin goes directly to main form
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -79,9 +84,14 @@ public class loginController implements Initializable {
             return;
         }
 
-        // Improved security: fetch user by username only, then verify password hash
-        String selectData = "SELECT username, password FROM employee WHERE username = ?";
+        // Updated query to include admin status
+        String selectData = "SELECT username, password, is_admin FROM employee WHERE username = ?";
         connect = Database.connectDB();
+
+        if (connect == null) {
+            showAlert(Alert.AlertType.ERROR, "Database Error", "Unable to connect to database. Please try again later.");
+            return;
+        }
 
         try {
             prepare = connect.prepareStatement(selectData);
@@ -89,12 +99,22 @@ public class loginController implements Initializable {
             result = prepare.executeQuery();
             
             if (result.next()) {
-                String storedHash = result.getString("password");
-                // Verify password hash
-                if (verifyPassword(password, storedHash)) {
+                String storedPassword = result.getString("password");
+                boolean isAdmin = result.getBoolean("is_admin");
+                
+                // Verify password
+                if (password.equals(storedPassword)) {
                     data.username = username;
+                    data.isAdmin = isAdmin;
+                    
                     showAlert(Alert.AlertType.INFORMATION, "Information Message", "Successfully Logged In!");
-                    loadMainForm();
+                    
+                    // Check if user is admin and redirect accordingly
+                    if (isAdmin) {
+                        loadLandingForm(); // Admin goes to landing page
+                    } else {
+                        loadMainForm(); // Regular user goes to main form
+                    }
                 } else {
                     showAlert(Alert.AlertType.ERROR, "Error Message", "Incorrect Username/Password");
                 }
@@ -108,18 +128,6 @@ public class loginController implements Initializable {
         }
     }
     
-    /**
-     * Verify if a password matches the stored hash
-     * @param password the plaintext password to check
-     * @param storedHash the stored password hash
-     * @return true if the password matches, false otherwise
-     */
-    private boolean verifyPassword(String password, String storedHash) {
-        // Generate hash of the provided password
-        String passwordHash = hashPassword(password);
-        // Compare with stored hash (in a real app, use constant-time comparison)
-        return passwordHash.equals(storedHash);
-    }
     
     @FXML
     private void switchForgotPass(ActionEvent event) {
@@ -129,12 +137,17 @@ public class loginController implements Initializable {
 
     @FXML
     private void regBtn() {
-        if (su_username.getText().isEmpty() || su_password.getText().isEmpty() || su_question.getSelectionModel().getSelectedItem() == null || su_answer.getText().isEmpty()) {
+        if (su_username.getText().isEmpty() || su_password.getText().isEmpty() || su_question.getSelectionModel().getSelectedItem() == null || su_answer.getText().isEmpty() || su_admin.getSelectionModel().getSelectedItem() == null) {
             showAlert(Alert.AlertType.ERROR, "Error Message", "Please fill all blank fields");
             return;
         }
 
         connect = Database.connectDB();
+
+        if (connect == null) {
+            showAlert(Alert.AlertType.ERROR, "Database Error", "Unable to connect to database. Please try again later.");
+            return;
+        }
 
         try {
             if (isUsernameTaken(su_username.getText())) {
@@ -146,6 +159,7 @@ public class loginController implements Initializable {
                 showAlert(Alert.AlertType.INFORMATION, "Information Message", "Successfully registered Account!");
                 clearFields(su_username, su_password, su_answer);
                 su_question.getSelectionModel().clearSelection();
+                su_admin.getSelectionModel().clearSelection();
                 switchToLoginForm();
             }
         } catch (Exception e) {
@@ -164,6 +178,11 @@ public class loginController implements Initializable {
 
         String selectData = "SELECT username, question, answer FROM employee WHERE username = ? AND question = ? AND answer = ?";
         connect = Database.connectDB();
+
+        if (connect == null) {
+            showAlert(Alert.AlertType.ERROR, "Database Error", "Unable to connect to database. Please try again later.");
+            return;
+        }
 
         try {
             prepare = connect.prepareStatement(selectData);
@@ -198,13 +217,18 @@ public class loginController implements Initializable {
 
         connect = Database.connectDB();
 
+        if (connect == null) {
+            showAlert(Alert.AlertType.ERROR, "Database Error", "Unable to connect to database. Please try again later.");
+            return;
+        }
+
         try {
             // Use hashed password for security
-            String hashedPassword = hashPassword(np_newPassword.getText());
+            // Use plain text password (no hashing)
             
             String updatePass = "UPDATE employee SET password = ?, question = ?, answer = ? WHERE username = ?";
             prepare = connect.prepareStatement(updatePass);
-            prepare.setString(1, hashedPassword);
+            prepare.setString(1, np_newPassword.getText());
             prepare.setString(2, fp_question.getSelectionModel().getSelectedItem());
             prepare.setString(3, fp_answer.getText());
             prepare.setString(4, fp_username.getText());
@@ -282,49 +306,39 @@ public class loginController implements Initializable {
         si_loginBtn.getScene().getWindow().hide();
     }
 
+    // Add new method to load landing form
+    private void loadLandingForm() throws Exception {
+        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("landing-view.fxml")));
+        Stage stage = new Stage();
+        Scene scene = new Scene(root);
+        stage.setTitle("Tusks Mocha Garden - Admin Dashboard");
+        stage.setScene(scene);
+        stage.show();
+
+        si_loginBtn.getScene().getWindow().hide();
+    }
+
     private void registerUser() throws SQLException {
-        String regData = "INSERT INTO employee (username, password, question, answer, hire_date) VALUES(?,?,?,?,?)";
+        String regData = "INSERT INTO employee (username, password, question, answer, is_admin, hire_date) VALUES(?,?,?,?,?,?)";
         prepare = connect.prepareStatement(regData);
         prepare.setString(1, su_username.getText());
         
         // Hash the password for security
-        String hashedPassword = hashPassword(su_password.getText());
-        prepare.setString(2, hashedPassword);
+        // Store password as plain text (no hashing)
+        prepare.setString(2, su_password.getText());
         
         prepare.setString(3, su_question.getSelectionModel().getSelectedItem());
         prepare.setString(4, su_answer.getText());
         
+        // Set admin status based on selection
+        boolean isAdmin = "Yes".equals(su_admin.getSelectionModel().getSelectedItem());
+        prepare.setBoolean(5, isAdmin);
+        
         java.sql.Date sqlDate = new java.sql.Date(new Date().getTime());
-        prepare.setDate(5, sqlDate);
+        prepare.setDate(6, sqlDate);
         prepare.executeUpdate();
     }
     
-    /**
-     * Hash a password for secure storage
-     * @param password the plaintext password to hash
-     * @return a secure hash of the password
-     */
-    private String hashPassword(String password) {
-        try {
-            // In a real production app, use a proper password hashing library like BCrypt
-            // This is a simple implementation using SHA-256 for demonstration
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(password.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            
-            // Convert bytes to hex string
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (java.security.NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            // Fall back to plaintext if hashing fails
-            return password;
-        }
-    }
 
     private boolean isUsernameTaken(String username) throws SQLException {
         String checkUsername = "SELECT username FROM employee WHERE username = ?";
