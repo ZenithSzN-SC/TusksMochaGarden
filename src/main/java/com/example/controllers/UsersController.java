@@ -98,7 +98,7 @@ public class UsersController implements Initializable {
                 connect = Database.connectDB();
                 prepare = connect.prepareStatement(sql);
                 prepare.setString(1, user.getUsername());
-                prepare.setString(2, hashPassword(user.getPassword()));
+                prepare.setString(2, user.getPassword());
                 prepare.setBoolean(3, user.getIsAdmin());
                 
                 int rowsAffected = prepare.executeUpdate();
