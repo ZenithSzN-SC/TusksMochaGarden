@@ -22,6 +22,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -41,7 +43,7 @@ public class mainFormController implements Initializable {
     private Label username, dashboard_NC, dashboard_TI, dashboard_TotalI, dashboard_NSP, menu_total, menu_change;
 
     @FXML
-    private Button dashboard_btn, inventory_btn, menu_btn, customers_btn, logout_btn, menu_receiptBtn, menu_payBtn, menu_removeBtn;
+    private Button dashboard_btn, inventory_btn, menu_btn, customers_btn, logout_btn, menu_receiptBtn, menu_payBtn, menu_removeBtn, inventory_printSingleBtn, inventory_printAllBtn, inventory_clearSearchBtn;
 
     @FXML
     private TableView<productData> inventory_tableView, menu_tableView;
@@ -77,7 +79,7 @@ public class mainFormController implements Initializable {
     private ImageView inventory_imageView;
 
     @FXML
-    private TextField inventory_productID, inventory_productName, inventory_stock, inventory_price, menu_amount;
+    private TextField inventory_productID, inventory_productName, inventory_stock, inventory_price, menu_amount, inventory_searchField;
 
     @FXML
     private ComboBox<String> inventory_type, inventory_status;
@@ -134,7 +136,7 @@ public class mainFormController implements Initializable {
             if (result.next()) {
                 ti = result.getDouble("SUM(total)");
             }
-            dashboard_TI.setText("$" + ti);
+            dashboard_TI.setText("£" + ti);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -150,7 +152,7 @@ public class mainFormController implements Initializable {
             if (result.next()) {
                 ti = result.getFloat("SUM(total)");
             }
-            dashboard_TotalI.setText("$" + ti);
+            dashboard_TotalI.setText("£" + ti);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -216,7 +218,7 @@ public class mainFormController implements Initializable {
         // Validate numeric inputs
         try {
             Integer.parseInt(inventory_stock.getText());
-            Double.parseDouble(inventory_price.getText().replace("$", ""));
+            Double.parseDouble(inventory_price.getText().replace("£", ""));
         } catch (NumberFormatException e) {
             showAlert(Alert.AlertType.ERROR, "Stock must be a whole number and price must be a valid number");
             return;
@@ -252,7 +254,7 @@ public class mainFormController implements Initializable {
                 prepare.setInt(4, stock);
                 
                 // Format price to ensure it's a valid decimal
-                double price = Double.parseDouble(inventory_price.getText().replace("$", ""));
+                double price = Double.parseDouble(inventory_price.getText().replace("£", ""));
                 if (price <= 0) {
                     showAlert(Alert.AlertType.ERROR, "Price must be greater than zero");
                     return;
@@ -368,7 +370,7 @@ public class mainFormController implements Initializable {
                 prepare.setString(3, inventory_stock.getText());
                 
                 // Format price to ensure it's a valid decimal
-                double price = Double.parseDouble(inventory_price.getText().replace("$", ""));
+                double price = Double.parseDouble(inventory_price.getText().replace("£", ""));
                 prepare.setString(4, String.valueOf(price));
                 
                 prepare.setString(5, inventory_status.getSelectionModel().getSelectedItem());
@@ -582,7 +584,7 @@ public class mainFormController implements Initializable {
         }
         
         double amount = Double.parseDouble(menu_amount.getText());
-        double total = Double.parseDouble(menu_total.getText().replace("$", ""));
+        double total = Double.parseDouble(menu_total.getText().replace("£", ""));
         
         if (amount < total) {
             showAlert(Alert.AlertType.ERROR, "Invalid payment amount!");
@@ -591,7 +593,7 @@ public class mainFormController implements Initializable {
         
         // Calculate change and display it
         double change = amount - total;
-        menu_change.setText(String.format("$%.2f", change));
+        menu_change.setText(String.format("£%.2f", change));
         
         // Create receipt
         String insertReceipt = "INSERT INTO receipt (customer_id, total, date, em_username) VALUES (?, ?, ?, ?)";
@@ -626,7 +628,7 @@ public class mainFormController implements Initializable {
                 menuShowOrderData();
                 menuGetTotal();
                 menu_amount.clear();
-                menu_change.setText("$0.0");
+                menu_change.setText("£0.0");
                 
                 // Update dashboard data
                 if (dashboard_form.isVisible()) {
@@ -712,22 +714,22 @@ public class mainFormController implements Initializable {
             
             // Add each item
             for (productData item : menuOrderListData) {
-                receipt.append(String.format("%-20s %-8d $%-10.2f\n", 
+                receipt.append(String.format("%-20s %-8d £%-10.2f\n", 
                     truncateString(item.getProductName(), 20),
                     item.getQuantity(),
                     item.getPrice()));
             }
             
             receipt.append("-------------------------------------------\n");
-            receipt.append(String.format("TOTAL%33s\n", String.format("$%.2f", totalP)));
+            receipt.append(String.format("TOTAL%33s\n", String.format("£%.2f", totalP)));
             
             // Add payment info if available
             if (!menu_amount.getText().isEmpty()) {
-                double amount = Double.parseDouble(menu_amount.getText().replace("$", "").replace(",", "").trim());
+                double amount = Double.parseDouble(menu_amount.getText().replace("£", "").replace(",", "").trim());
                 double change = amount - totalP;
                 
-                receipt.append(String.format("AMOUNT PAID%28s\n", String.format("$%.2f", amount)));
-                receipt.append(String.format("CHANGE%32s\n", String.format("$%.2f", change)));
+                receipt.append(String.format("AMOUNT PAID%28s\n", String.format("£%.2f", amount)));
+                receipt.append(String.format("CHANGE%32s\n", String.format("£%.2f", change)));
             }
             
             receipt.append("===========================================\n");
@@ -750,8 +752,47 @@ public class mainFormController implements Initializable {
             receiptDialog.getDialogPane().setContent(textArea);
             receiptDialog.showAndWait();
             
+            // Save receipt to txt file
+            saveReceiptToFile(receipt.toString());
+            
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Error generating receipt: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Saves the receipt content to a txt file
+     * 
+     * @param receiptContent The receipt content to save
+     */
+    private void saveReceiptToFile(String receiptContent) {
+        try {
+            // Create receipts directory if it doesn't exist
+            File receiptsDir = new File("receipts");
+            if (!receiptsDir.exists()) {
+                receiptsDir.mkdirs();
+            }
+            
+            // Generate filename with timestamp and customer ID
+            String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+            String filename = String.format("receipt_CID%d_%s.txt", data.cID, timestamp);
+            File receiptFile = new File(receiptsDir, filename);
+            
+            // Write receipt content to file
+            try (FileWriter writer = new FileWriter(receiptFile)) {
+                writer.write(receiptContent);
+                writer.flush();
+            }
+            
+            // Show success message with file location
+            showAlert(Alert.AlertType.INFORMATION, 
+                String.format("Receipt saved successfully!\n\nFile: %s\nLocation: %s", 
+                    filename, receiptFile.getAbsolutePath()));
+            
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, 
+                "Failed to save receipt to file: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -827,7 +868,7 @@ public class mainFormController implements Initializable {
                 totalP = result.getDouble("SUM(price)");
             }
             
-            menu_total.setText(String.format("$%.2f", totalP));
+            menu_total.setText(String.format("£%.2f", totalP));
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -929,14 +970,34 @@ public class mainFormController implements Initializable {
     // Logout method
     public void logout() {
         try {
-            showAlert(Alert.AlertType.CONFIRMATION, "Are you sure you want to logout?");
-            logout_btn.getScene().getWindow().hide();
-            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("FXMLDocument.fxml")));
-            Stage stage = new Stage();
-            Scene scene = new Scene(root);
-            stage.setTitle("Tusks Mocha Garden");
-            stage.setScene(scene);
-            stage.show();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Logout Confirmation");
+            alert.setHeaderText(null);
+            alert.setContentText("Are you sure you want to logout?");
+            
+            java.util.Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                // Clear user data
+                data.username = null;
+                data.isAdmin = null;
+                data.id = null;
+                data.cID = null;
+                data.path = null;
+                data.date = null;
+                
+                // Load the login form
+                Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("login.fxml")));
+                Stage stage = new Stage();
+                Scene scene = new Scene(root);
+                stage.setTitle("Tusks Mocha Garden - Login");
+                stage.setMinHeight(400);
+                stage.setMinWidth(600);
+                stage.setScene(scene);
+                stage.show();
+                
+                // Close the main form window
+                logout_btn.getScene().getWindow().hide();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1028,7 +1089,7 @@ public class mainFormController implements Initializable {
      */
     private void resetPaymentFields() {
         if (menu_amount != null) menu_amount.clear();
-        if (menu_change != null) menu_change.setText("$0.00");
+        if (menu_change != null) menu_change.setText("£0.00");
         if (menu_payBtn != null) menu_payBtn.setDisable(true);
     }
 
@@ -1038,6 +1099,187 @@ public class mainFormController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    // Product print functionality
+    @FXML
+    public void inventoryPrintSingleBtn() {
+        productData selectedProduct = inventory_tableView.getSelectionModel().getSelectedItem();
+        if (selectedProduct == null) {
+            showAlert(Alert.AlertType.ERROR, "Please select a product to print details for!");
+            return;
+        }
+        
+        printSingleProductToFile(selectedProduct);
+    }
+    
+    @FXML
+    public void inventoryPrintAllBtn() {
+        printAllStockToFile();
+    }
+    
+    @FXML
+    public void inventorySearchProduct() {
+        String searchText = inventory_searchField.getText().toLowerCase();
+        if (searchText.isEmpty()) {
+            inventoryShowData(); // Show all data if search is empty
+            return;
+        }
+        
+        ObservableList<productData> filteredList = FXCollections.observableArrayList();
+        for (productData product : inventoryListData) {
+            if (product.getProductName().toLowerCase().contains(searchText) ||
+                product.getProductId().toLowerCase().contains(searchText) ||
+                product.getType().toLowerCase().contains(searchText)) {
+                filteredList.add(product);
+            }
+        }
+        inventory_tableView.setItems(filteredList);
+    }
+    
+    @FXML
+    public void inventoryClearSearch() {
+        inventory_searchField.clear();
+        inventoryShowData(); // Reset to show all data
+    }
+    
+    private void printSingleProductToFile(productData product) {
+        try {
+            // Create reports directory if it doesn't exist
+            File reportsDir = new File("reports");
+            if (!reportsDir.exists()) {
+                reportsDir.mkdirs();
+            }
+            
+            // Generate filename
+            String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+            String filename = String.format("product_%s_%s.txt", product.getProductId(), timestamp);
+            File reportFile = new File(reportsDir, filename);
+            
+            // Create report content
+            StringBuilder report = new StringBuilder();
+            report.append("===========================================\n");
+            report.append("         PRODUCT DETAILS REPORT           \n");
+            report.append("===========================================\n");
+            report.append("Generated: ").append(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date())).append("\n");
+            report.append("Generated by: ").append(data.username).append("\n\n");
+            
+            report.append("PRODUCT INFORMATION:\n");
+            report.append("-------------------------------------------\n");
+            report.append("Product ID: ").append(product.getProductId()).append("\n");
+            report.append("Product Name: ").append(product.getProductName()).append("\n");
+            report.append("Category: ").append(product.getType()).append("\n");
+            report.append("Stock Available: ").append(product.getStock()).append(" units\n");
+            report.append("Unit Price: £").append(String.format("%.2f", product.getPrice())).append("\n");
+            report.append("Total Value: £").append(String.format("%.2f", product.getStock() * product.getPrice())).append("\n");
+            report.append("Status: ").append(product.getStatus()).append("\n");
+            report.append("Date Added: ").append(product.getDate()).append("\n");
+            
+            if (product.getImage() != null && !product.getImage().isEmpty()) {
+                report.append("Image Path: ").append(product.getImage()).append("\n");
+            }
+            
+            report.append("\n===========================================\n");
+            report.append("         END OF PRODUCT REPORT            \n");
+            report.append("===========================================\n");
+            
+            // Write to file
+            try (FileWriter writer = new FileWriter(reportFile)) {
+                writer.write(report.toString());
+                writer.flush();
+            }
+            
+            showAlert(Alert.AlertType.INFORMATION, 
+                String.format("Product report saved successfully!\n\nFile: %s\nLocation: %s", 
+                    filename, reportFile.getAbsolutePath()));
+            
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Failed to save product report: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private void printAllStockToFile() {
+        try {
+            // Create reports directory if it doesn't exist
+            File reportsDir = new File("reports");
+            if (!reportsDir.exists()) {
+                reportsDir.mkdirs();
+            }
+            
+            // Generate filename
+            String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+            String filename = String.format("stock_report_%s.txt", timestamp);
+            File reportFile = new File(reportsDir, filename);
+            
+            // Get all products from database
+            ObservableList<productData> allProducts = inventoryDataList();
+            
+            // Calculate totals
+            double totalCostValue = 0;
+            double totalSellingValue = 0;
+            int totalUnits = 0;
+            
+            for (productData product : allProducts) {
+                totalUnits += product.getStock();
+                double productValue = product.getStock() * product.getPrice();
+                totalSellingValue += productValue;
+                // Assuming cost price is 70% of selling price for this calculation
+                totalCostValue += productValue * 0.7;
+            }
+            
+            // Create report content
+            StringBuilder report = new StringBuilder();
+            report.append("===========================================\n");
+            report.append("           COMPLETE STOCK REPORT          \n");
+            report.append("===========================================\n");
+            report.append("Generated: ").append(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date())).append("\n");
+            report.append("Generated by: ").append(data.username).append("\n\n");
+            
+            report.append("STOCK SUMMARY:\n");
+            report.append("-------------------------------------------\n");
+            report.append("Total Products: ").append(allProducts.size()).append("\n");
+            report.append("Total Units in Stock: ").append(totalUnits).append("\n");
+            report.append("Total Stock Value (Cost): £").append(String.format("%.2f", totalCostValue)).append("\n");
+            report.append("Total Stock Value (Selling): £").append(String.format("%.2f", totalSellingValue)).append("\n");
+            report.append("Potential Profit: £").append(String.format("%.2f", totalSellingValue - totalCostValue)).append("\n\n");
+            
+            report.append("DETAILED STOCK LISTING:\n");
+            report.append("-------------------------------------------\n");
+            report.append(String.format("%-15s %-25s %-12s %-8s %-10s %-12s %-15s\n", 
+                "Product ID", "Product Name", "Category", "Stock", "Price", "Total Value", "Status"));
+            report.append("-------------------------------------------\n");
+            
+            for (productData product : allProducts) {
+                double totalValue = product.getStock() * product.getPrice();
+                report.append(String.format("%-15s %-25s %-12s %-8d £%-9.2f £%-11.2f %-15s\n",
+                    truncateString(product.getProductId(), 15),
+                    truncateString(product.getProductName(), 25),
+                    truncateString(product.getType(), 12),
+                    product.getStock(),
+                    product.getPrice(),
+                    totalValue,
+                    product.getStatus()));
+            }
+            
+            report.append("\n===========================================\n");
+            report.append("            END OF STOCK REPORT           \n");
+            report.append("===========================================\n");
+            
+            // Write to file
+            try (FileWriter writer = new FileWriter(reportFile)) {
+                writer.write(report.toString());
+                writer.flush();
+            }
+            
+            showAlert(Alert.AlertType.INFORMATION, 
+                String.format("Stock report saved successfully!\n\nFile: %s\nLocation: %s\n\nTotal Products: %d\nTotal Value: £%.2f", 
+                    filename, reportFile.getAbsolutePath(), allProducts.size(), totalSellingValue));
+            
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Failed to save stock report: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -1055,7 +1297,7 @@ public class mainFormController implements Initializable {
         try {
             // Remove any currency symbol and whitespace
             String cleanAmount = menu_amount.getText()
-                .replace("$", "")
+                .replace("£", "")
                 .replace(",", "")
                 .trim();
                 
@@ -1070,13 +1312,13 @@ public class mainFormController implements Initializable {
             // Validate amount is sufficient
             if (amount < totalP) {
                 showAlert(Alert.AlertType.ERROR, 
-                    String.format("Payment amount $%.2f is less than the total $%.2f", amount, totalP));
+                    String.format("Payment amount £%.2f is less than the total £%.2f", amount, totalP));
                 return;
             }
             
             // Calculate and show the change with proper formatting
             double change = amount - totalP;
-            menu_change.setText(String.format("$%.2f", change));
+            menu_change.setText(String.format("£%.2f", change));
             
             // Enable pay button now that a valid amount is entered
             menu_payBtn.setDisable(false);
@@ -1084,7 +1326,7 @@ public class mainFormController implements Initializable {
         } catch (NumberFormatException e) {
             showAlert(Alert.AlertType.ERROR, "Please enter a valid number!");
             menu_amount.clear();
-            menu_change.setText("$0.00");
+            menu_change.setText("£0.00");
             menu_payBtn.setDisable(true);
         }
     }

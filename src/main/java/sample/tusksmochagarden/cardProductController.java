@@ -78,7 +78,7 @@ public class cardProductController implements Initializable {
         type = prodData.getType();
         prodID = prodData.getProductId();
         prod_name.setText(prodData.getProductName());
-        prod_price.setText("$" + String.valueOf(prodData.getPrice()));
+        prod_price.setText("£" + String.valueOf(prodData.getPrice()));
 
         // Load and display the product image
         String path = "File:" + prodData.getImage();
