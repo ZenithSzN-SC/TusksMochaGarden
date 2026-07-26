@@ -1,4 +1,4 @@
-package com.example.controllers;
+package com.tusksmochagarden.controller;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -8,7 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
-import sample.tusksmochagarden.data;
+import com.tusksmochagarden.model.AppSession;
 
 import java.util.Objects;
 
@@ -21,7 +21,7 @@ public class LandingController {
     private void openInventorySystem(ActionEvent event) {
         try {
             // Load the main form (inventory management system)
-            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/sample/tusksmochagarden/mainForm.fxml")));
+            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/com/tusksmochagarden/mainForm.fxml")));
             Stage stage = new Stage();
             Scene scene = new Scene(root);
             stage.setTitle("Tusks Mocha Garden - Inventory Management");
@@ -42,7 +42,7 @@ public class LandingController {
     private void openUsersSystem(ActionEvent event) {
         try {
             // Load the users view
-            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/sample/tusksmochagarden/users-view.fxml")));
+            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/com/tusksmochagarden/users-view.fxml")));
             Stage stage = new Stage();
             Scene scene = new Scene(root);
             stage.setTitle("Tusks Mocha Garden - User Management");
@@ -63,15 +63,15 @@ public class LandingController {
     private void signOut(ActionEvent event) {
         try {
             // Clear user data
-            data.username = null;
-            data.isAdmin = null;
-            data.id = null;
-            data.cID = null;
-            data.path = null;
-            data.date = null;
+            AppSession.username = null;
+            AppSession.isAdmin = null;
+            AppSession.id = null;
+            AppSession.cID = null;
+            AppSession.path = null;
+            AppSession.date = null;
 
             // Load the login form
-            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/sample/tusksmochagarden/login.fxml")));
+            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/com/tusksmochagarden/login.fxml")));
             Stage stage = new Stage();
             Scene scene = new Scene(root);
             stage.setTitle("Tusks Mocha Garden - Login");

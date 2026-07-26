@@ -1,20 +1,56 @@
+/* Menu product card — modern warm palette */
+
 .card {
-    -fx-background-color: #fff;
-    -fx-background-radius: 8px;
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 20px;
+    -fx-border-color: #F0EAE5;
+    -fx-border-radius: 20px;
+    -fx-border-width: 1px;
+}
+
+.card:hover {
+    -fx-border-color: #E6BCAB;
+}
+
+.card-img-holder {
+    -fx-background-color: #FCF9F8;
+    -fx-background-radius: 19px 19px 0 0;
+}
+
+.card-name {
+    -fx-font-family: "Outfit";
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2A2422;
+}
+
+.card-price {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #C4836A;
 }
 
 .shadow {
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 8, 0, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(196,131,106,0.16), 14, 0, 0, 4);
 }
 
 .btn {
-    -fx-background-color: linear-gradient(to bottom right, #E4B7A0, #A45C40); /* Matching the login button gradient */
+    -fx-background-color: #C4836A;
+    -fx-background-radius: 10px;
     -fx-cursor: hand;
-    -fx-text-fill: #fff;
-    -fx-background-radius: 5px;
-    -fx-font-size: 14px;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
 }
 
 .btn:hover {
-    -fx-background-color: linear-gradient(to bottom right, #E4D4C8, #A45C40); /* Matching the hover state of login button */
+    -fx-background-color: #B37055;
+}
+
+.spinner {
+    -fx-background-color: #FDFBF9;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E8E2DE;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
 }

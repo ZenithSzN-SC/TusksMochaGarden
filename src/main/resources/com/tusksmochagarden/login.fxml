@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Hyperlink?>
@@ -9,102 +10,279 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.tusksmochagarden.loginController">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="640.0" prefWidth="1000.0" stylesheets="@loginDesign.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tusksmochagarden.controller.LoginController">
    <children>
-      <AnchorPane prefHeight="200.0" prefWidth="200.0">
-         <!-- Login Form -->
-         <AnchorPane fx:id="si_loginForm" layoutX="300.0" prefHeight="400.0" prefWidth="300.0" styleClass="white-form" stylesheets="@loginDesign.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <AnchorPane styleClass="login-root">
+
+         <!-- Login Form (left half) -->
+         <AnchorPane fx:id="si_loginForm" prefWidth="500.0" styleClass="white-form" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-               <Label layoutX="34.0" layoutY="65.0" styleClass="head-label" text="Login Account">
-                  <font>
-                     <Font size="20.0" />
-                  </font>
-               </Label>
-               <TextField fx:id="si_username" layoutX="40.0" layoutY="152.0" onAction="#loginBtn" prefHeight="30.0" prefWidth="220.0" promptText="Username" styleClass="textfield" />
-               <PasswordField fx:id="si_password" layoutX="40.0" layoutY="192.0" onAction="#loginBtn" prefHeight="30.0" prefWidth="220.0" promptText="Password" styleClass="textfield" />
-               <Button fx:id="si_loginBtn" layoutX="40.0" layoutY="259.0" mnemonicParsing="false" onAction="#loginBtn" prefHeight="40.0" prefWidth="220.0" styleClass="login-btn" text="Login" />
-               <Hyperlink fx:id="si_forgotPass" layoutX="40.0" layoutY="229.0" onAction="#switchForgotPass" text="Forgot Password?" />
+               <VBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <children>
+                     <VBox maxWidth="340.0" spacing="6.0">
+                        <children>
+                           <Label styleClass="h1" text="Welcome back." />
+                           <Label styleClass="sub-label" text="Soft light, first espresso. Let's open." />
+                           <VBox spacing="6.0">
+                              <padding>
+                                 <Insets top="28.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="Username" />
+                                 <TextField fx:id="si_username" onAction="#loginBtn" prefHeight="44.0" promptText="e.g. barista" styleClass="textfield" />
+                              </children>
+                           </VBox>
+                           <VBox spacing="6.0" styleClass="password-holder">
+                              <padding>
+                                 <Insets top="12.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="Password" />
+                                 <StackPane>
+                                    <children>
+                                       <PasswordField fx:id="si_password" onAction="#loginBtn" prefHeight="44.0" promptText="••••••••" styleClass="textfield" />
+                                       <TextField fx:id="si_passwordText" onAction="#loginBtn" prefHeight="44.0" promptText="••••••••" styleClass="textfield" visible="false" />
+                                       <HBox alignment="CENTER_RIGHT" pickOnBounds="false">
+                                          <children>
+                                             <Button fx:id="si_eyeBtn" mnemonicParsing="false" onAction="#togglePassword" styleClass="eye-btn">
+                                                <graphic>
+                                                   <SVGPath content="M12 5c-5 0-9 4.5-10 7 1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7zm0 11.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9zm0-2a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" scaleX="0.8" scaleY="0.8" styleClass="eye-shape" />
+                                                </graphic>
+                                                <HBox.margin>
+                                                   <Insets right="6.0" />
+                                                </HBox.margin>
+                                             </Button>
+                                          </children>
+                                       </HBox>
+                                    </children>
+                                 </StackPane>
+                              </children>
+                           </VBox>
+                           <HBox alignment="CENTER_RIGHT">
+                              <children>
+                                 <Hyperlink fx:id="si_forgotPass" onAction="#switchForgotPass" styleClass="link" text="Forgot password?" />
+                              </children>
+                           </HBox>
+                           <Button fx:id="si_loginBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#loginBtn" prefHeight="48.0" styleClass="login-btn" text="Sign In">
+                              <VBox.margin>
+                                 <Insets top="10.0" />
+                              </VBox.margin>
+                           </Button>
+                        </children>
+                     </VBox>
+                  </children>
+               </VBox>
             </children>
          </AnchorPane>
 
-         <!-- Signup Form -->
-         <AnchorPane fx:id="su_signupForm" prefHeight="400.0" prefWidth="300.0" styleClass="white-form" stylesheets="@loginDesign.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <!-- Forgot Password Form (left half, hidden) -->
+         <AnchorPane fx:id="fp_questionForm" prefWidth="500.0" styleClass="white-form" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-               <Label layoutX="34.0" layoutY="65.0" styleClass="head-label" text="Register Account" textFill="#399a8f">
-                  <font>
-                     <Font size="20.0" />
-                  </font>
-               </Label>
-               <TextField fx:id="su_username" layoutX="40.0" layoutY="121.0" onAction="#regBtn" prefHeight="30.0" prefWidth="220.0" promptText="Username" styleClass="textfield" />
-               <PasswordField fx:id="su_password" layoutX="40.0" layoutY="161.0" onAction="#regBtn" prefHeight="30.0" prefWidth="220.0" promptText="Password" styleClass="textfield" />
-               <ComboBox fx:id="su_question" layoutX="40.0" layoutY="200.0" prefHeight="30.0" prefWidth="220.0" promptText="Question" styleClass="textfield" />
-               <TextField fx:id="su_answer" layoutX="40.0" layoutY="240.0" onAction="#regBtn" prefHeight="30.0" prefWidth="220.0" promptText="Answer" styleClass="textfield" />
-               <Button fx:id="su_signupBtn" layoutX="40.0" layoutY="353.0" mnemonicParsing="false" onAction="#regBtn" prefHeight="40.0" prefWidth="220.0" styleClass="login-btn" text="Sign Up" />
-               <ComboBox fx:id="su_admin" layoutX="40.0" layoutY="282.0" prefHeight="30.0" prefWidth="220.0" promptText="Admin?" styleClass="textfield" />
+               <VBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <children>
+                     <VBox maxWidth="340.0" spacing="6.0">
+                        <children>
+                           <Label styleClass="h1" text="Recover access." />
+                           <Label styleClass="sub-label" text="Answer your security question to reset." />
+                           <VBox spacing="6.0">
+                              <padding>
+                                 <Insets top="28.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="Username" />
+                                 <TextField fx:id="fp_username" prefHeight="44.0" promptText="Enter your username" styleClass="textfield" />
+                              </children>
+                           </VBox>
+                           <VBox spacing="6.0">
+                              <padding>
+                                 <Insets top="12.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="Security Question" />
+                                 <ComboBox fx:id="fp_question" maxWidth="1.7976931348623157E308" prefHeight="44.0" promptText="Select a question" styleClass="textfield" />
+                              </children>
+                           </VBox>
+                           <VBox spacing="6.0">
+                              <padding>
+                                 <Insets top="12.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="Answer" />
+                                 <TextField fx:id="fp_answer" prefHeight="44.0" promptText="Your secret answer" styleClass="textfield" />
+                              </children>
+                           </VBox>
+                           <Button fx:id="fp_proceedBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#proceedBtn" prefHeight="48.0" styleClass="login-btn" text="Reset Password">
+                              <VBox.margin>
+                                 <Insets top="18.0" />
+                              </VBox.margin>
+                           </Button>
+                           <HBox alignment="CENTER">
+                              <children>
+                                 <Hyperlink fx:id="fp_back" onAction="#backToLoginForm" styleClass="link" text="Back to sign in" />
+                              </children>
+                              <padding>
+                                 <Insets top="6.0" />
+                              </padding>
+                           </HBox>
+                        </children>
+                     </VBox>
+                  </children>
+               </VBox>
             </children>
          </AnchorPane>
 
-         <!-- Forgot Password Form -->
-         <AnchorPane fx:id="fp_questionForm" layoutX="300.0" layoutY="3.0" prefHeight="400.0" prefWidth="300.0" styleClass="white-form" stylesheets="@loginDesign.css" visible="false">
+         <!-- New Password Form (left half, hidden) -->
+         <AnchorPane fx:id="np_newPassForm" prefWidth="500.0" styleClass="white-form" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-               <Label layoutX="34.0" layoutY="65.0" styleClass="head-label" text="Forgot Password" textFill="#399a8f">
-                  <font>
-                     <Font size="20.0" />
-                  </font>
-               </Label>
-               <Button fx:id="fp_proceedBtn" layoutX="40.0" layoutY="256.0" mnemonicParsing="false" onAction="#proceedBtn" prefHeight="40.0" prefWidth="220.0" styleClass="login-btn" text="Proceed" />
-               <TextField fx:id="fp_username" layoutX="40.0" layoutY="127.0" prefHeight="30.0" prefWidth="220.0" promptText="Username" styleClass="textfield" />
-               <ComboBox fx:id="fp_question" layoutX="40.0" layoutY="167.0" prefHeight="30.0" prefWidth="220.0" promptText="Question" styleClass="textfield" />
-               <TextField fx:id="fp_answer" layoutX="40.0" layoutY="203.0" prefHeight="30.0" prefWidth="220.0" promptText="Answer" styleClass="textfield" />
-               <Button fx:id="fp_back" layoutX="116.0" layoutY="355.0" mnemonicParsing="false" onAction="#backToLoginForm" prefHeight="30.0" prefWidth="68.0" styleClass="login-btn" text="Back" />
+               <VBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <children>
+                     <VBox maxWidth="340.0" spacing="6.0">
+                        <children>
+                           <Label styleClass="h1" text="New password." />
+                           <Label styleClass="sub-label" text="Choose something memorable and safe." />
+                           <VBox spacing="6.0">
+                              <padding>
+                                 <Insets top="28.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="New Password" />
+                                 <PasswordField fx:id="np_newPassword" onAction="#changePassBtn" prefHeight="44.0" promptText="••••••••" styleClass="textfield" />
+                              </children>
+                           </VBox>
+                           <VBox spacing="6.0">
+                              <padding>
+                                 <Insets top="12.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="Confirm Password" />
+                                 <PasswordField fx:id="np_confirmPassword" onAction="#changePassBtn" prefHeight="44.0" promptText="••••••••" styleClass="textfield" />
+                              </children>
+                           </VBox>
+                           <Button fx:id="np_changePassBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#changePassBtn" prefHeight="48.0" styleClass="login-btn" text="Change Password">
+                              <VBox.margin>
+                                 <Insets top="18.0" />
+                              </VBox.margin>
+                           </Button>
+                           <HBox alignment="CENTER">
+                              <children>
+                                 <Hyperlink fx:id="np_back" onAction="#backToQuestionForm" styleClass="link" text="Back" />
+                              </children>
+                              <padding>
+                                 <Insets top="6.0" />
+                              </padding>
+                           </HBox>
+                        </children>
+                     </VBox>
+                  </children>
+               </VBox>
             </children>
          </AnchorPane>
 
-         <!-- New Password Form -->
-         <AnchorPane fx:id="np_newPassForm" layoutX="300.0" layoutY="7.0" prefHeight="400.0" prefWidth="300.0" styleClass="white-form" stylesheets="@loginDesign.css" visible="false">
+         <!-- Signup Form (right half) -->
+         <AnchorPane fx:id="su_signupForm" styleClass="white-form" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="500.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-               <Label layoutX="34.0" layoutY="65.0" styleClass="head-label" text="Forgot Password" textFill="#399a8f">
-                  <font>
-                     <Font size="20.0" />
-                  </font>
-               </Label>
-               <PasswordField fx:id="np_newPassword" layoutX="40.0" layoutY="148.0" onAction="#changePassBtn" prefHeight="30.0" prefWidth="220.0" promptText="New Password" styleClass="textfield" />
-               <PasswordField fx:id="np_confirmPassword" layoutX="40.0" layoutY="185.0" onAction="#changePassBtn" prefHeight="30.0" prefWidth="220.0" promptText="Confirmation Password" styleClass="textfield" />
-               <Button fx:id="np_changePassBtn" layoutX="40.0" layoutY="228.0" mnemonicParsing="false" onAction="#changePassBtn" prefHeight="40.0" prefWidth="220.0" styleClass="login-btn" text="Change Password" />
-               <Button fx:id="np_back" layoutX="116.0" layoutY="355.0" mnemonicParsing="false" onAction="#backToQuestionForm" prefHeight="30.0" prefWidth="68.0" styleClass="login-btn" text="Back" />
+               <VBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <children>
+                     <VBox maxWidth="340.0" spacing="6.0">
+                        <children>
+                           <Label styleClass="h1" text="Join the family." />
+                           <Label styleClass="sub-label" text="Create your staff account below." />
+                           <VBox spacing="6.0">
+                              <padding>
+                                 <Insets top="24.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="Username" />
+                                 <TextField fx:id="su_username" onAction="#regBtn" prefHeight="42.0" promptText="e.g. jdoe" styleClass="textfield" />
+                              </children>
+                           </VBox>
+                           <VBox spacing="6.0">
+                              <padding>
+                                 <Insets top="10.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="Password" />
+                                 <PasswordField fx:id="su_password" onAction="#regBtn" prefHeight="42.0" promptText="At least 8 characters" styleClass="textfield" />
+                              </children>
+                           </VBox>
+                           <VBox spacing="6.0">
+                              <padding>
+                                 <Insets top="10.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="Security Question" />
+                                 <ComboBox fx:id="su_question" maxWidth="1.7976931348623157E308" prefHeight="42.0" promptText="Choose a recovery question" styleClass="textfield" />
+                              </children>
+                           </VBox>
+                           <VBox spacing="6.0">
+                              <padding>
+                                 <Insets top="10.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="Answer" />
+                                 <TextField fx:id="su_answer" onAction="#regBtn" prefHeight="42.0" promptText="Your secret answer" styleClass="textfield" />
+                              </children>
+                           </VBox>
+                           <VBox spacing="6.0">
+                              <padding>
+                                 <Insets top="10.0" />
+                              </padding>
+                              <children>
+                                 <Label styleClass="field-label" text="Account Role" />
+                                 <ComboBox fx:id="su_admin" maxWidth="1.7976931348623157E308" prefHeight="42.0" promptText="Admin account?" styleClass="textfield" />
+                              </children>
+                           </VBox>
+                           <Button fx:id="su_signupBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#regBtn" prefHeight="48.0" styleClass="login-btn" text="Create Account">
+                              <VBox.margin>
+                                 <Insets top="18.0" />
+                              </VBox.margin>
+                           </Button>
+                        </children>
+                     </VBox>
+                  </children>
+               </VBox>
             </children>
          </AnchorPane>
 
-         <!-- Side Form with ImageView -->
-         <AnchorPane fx:id="side_form" prefHeight="400.0" prefWidth="300.0" styleClass="gradient" stylesheets="@loginDesign.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <!-- Side Panel (starts on the right, slides left for signup) -->
+         <AnchorPane fx:id="side_form" layoutX="500.0" prefWidth="500.0" styleClass="gradient" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-               <Label layoutX="85.0" layoutY="309.0" text="Create Account" textFill="WHITE">
-                  <font>
-                     <Font size="20.0" />
-                  </font>
-               </Label>
-               <Button fx:id="side_CreateBtn" layoutX="43.0" layoutY="346.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="40.0" prefWidth="220.0" styleClass="create-btn" text="Create new Account" />
-               <Button fx:id="side_alreadyHave" layoutX="43.0" layoutY="353.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="40.0" prefWidth="220.0" styleClass="create-btn" text="Already have an Account" visible="false" />
-
-               <ImageView fitHeight="84.0" fitWidth="101.0" layoutX="108.0" layoutY="43.0" pickOnBounds="true" preserveRatio="true">
-                  <image>
-                     <Image url="@transparent_image.png" />
-                  </image>
-               </ImageView>
-
-               <Label layoutX="75.0" layoutY="134.0" prefHeight="21.0" prefWidth="156.0" text="Tusk's Mocha Garden" textFill="WHITE">
-                  <font>
-                     <Font name="SansSerif Regular" size="15.0" />
-                  </font>
-               </Label>
-               <Label layoutX="46.0" layoutY="190.0" text="Cafe Shop Management System" textFill="WHITE">
-                  <font>
-                     <Font size="15.0" />
-                  </font>
-               </Label>
+               <VBox alignment="CENTER" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <children>
+                     <StackPane styleClass="logo-circle">
+                        <children>
+                           <ImageView fitHeight="110.0" fitWidth="132.0" pickOnBounds="true" preserveRatio="true">
+                              <image>
+                                 <Image url="@transparent_image.png" />
+                              </image>
+                           </ImageView>
+                        </children>
+                        <padding>
+                           <Insets bottom="28.0" left="28.0" right="28.0" top="28.0" />
+                        </padding>
+                        <VBox.margin>
+                           <Insets bottom="24.0" />
+                        </VBox.margin>
+                     </StackPane>
+                     <Label styleClass="overlay-title" text="Welcome to Tusk's" />
+                     <Label styleClass="overlay-sub" text="Tusk's Mocha Garden — Cafe Shop Management" />
+                     <Label styleClass="overlay-note" text="New to the team? Join the neighborhood family." />
+                     <StackPane>
+                        <children>
+                           <Button fx:id="side_CreateBtn" mnemonicParsing="false" onAction="#switchForm" prefHeight="48.0" prefWidth="240.0" styleClass="create-btn" text="Create Account" />
+                           <Button fx:id="side_alreadyHave" mnemonicParsing="false" onAction="#switchForm" prefHeight="48.0" prefWidth="240.0" styleClass="create-btn" text="Sign In" visible="false" />
+                        </children>
+                        <VBox.margin>
+                           <Insets top="28.0" />
+                        </VBox.margin>
+                     </StackPane>
+                  </children>
+               </VBox>
             </children>
          </AnchorPane>
 

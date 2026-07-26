@@ -1,4 +1,4 @@
-module sample.tusksmochagarden {
+module com.tusksmochagarden {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
@@ -11,7 +11,9 @@ module sample.tusksmochagarden {
     requires eu.hansolo.tilesfx;
     requires java.sql;
     requires mysql.connector.j;
+    requires jbcrypt;
 
-    opens sample.tusksmochagarden to javafx.fxml;
-    exports sample.tusksmochagarden;
+    opens com.tusksmochagarden.controller to javafx.fxml, javafx.base;
+    opens com.tusksmochagarden.model to javafx.fxml, javafx.base;
+    exports com.tusksmochagarden.app;
 }

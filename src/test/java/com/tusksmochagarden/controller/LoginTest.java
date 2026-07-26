@@ -1,9 +1,12 @@
-package sample.tusksmochagarden;
+package com.tusksmochagarden.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
+
+import com.tusksmochagarden.data.Database;
+import com.tusksmochagarden.data.PasswordHasher;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -76,12 +79,12 @@ public class LoginTest {
     private static class LoginAuthenticator {
         
         public boolean authenticate(String username, String password) {
-            // Replicate the authentication logic from loginController
+            // Replicate the authentication logic from LoginController
             if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
                 return false;
             }
             
-            // Test the hardcoded test user first (from loginController.java:70-80)
+            // Test the hardcoded test user first (from LoginController.java:70-80)
             if ("testuser".equals(username) && "testpass".equals(password)) {
                 return true;
             }
@@ -103,7 +106,7 @@ public class LoginTest {
                 try (ResultSet result = prepare.executeQuery()) {
                     if (result.next()) {
                         String storedPassword = result.getString("password");
-                        return password.equals(storedPassword);
+                        return PasswordHasher.verify(password, storedPassword);
                     }
                 }
             } catch (SQLException e) {

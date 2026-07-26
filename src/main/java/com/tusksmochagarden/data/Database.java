@@ -1,4 +1,4 @@
-package sample.tusksmochagarden;
+package com.tusksmochagarden.data;
 
 import javafx.scene.control.Alert;
 import java.sql.Connection;
@@ -15,10 +15,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class Database {
 
-    // JDBC URL, username, and password
-    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/tusks_mocha_garden";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "MySql2025";
+    // JDBC URL, username, and password — configured via environment variables so no
+    // credentials are ever hardcoded or committed. See README for setup.
+    private static final String JDBC_URL = System.getenv().getOrDefault(
+            "DB_URL", "jdbc:mysql://localhost:3306/tusks_mocha_garden");
+    private static final String USERNAME = System.getenv().getOrDefault("DB_USERNAME", "root");
+    private static final String PASSWORD = System.getenv("DB_PASSWORD");
     
     // Connection pool settings
     private static final int MAX_POOL_SIZE = 10;

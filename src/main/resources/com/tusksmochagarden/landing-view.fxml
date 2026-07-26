@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="gradient" stylesheets="@mainFormDesign.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.LandingController">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="gradient" stylesheets="@mainFormDesign.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tusksmochagarden.controller.LandingController">
    <children>
       <AnchorPane prefHeight="200.0" prefWidth="200.0">
          <children>
@@ -24,19 +24,19 @@
                               <Image url="@transparent_image.png" />
                            </image>
                         </ImageView>
-                        <Label styleClass="head-label" text="Tusks Mocha Garden" textFill="#A45C40">
+                        <Label styleClass="head-label" text="Tusk's Mocha Garden" textFill="#8a5a4a">
                            <font>
-                              <Font size="28.0" />
+                              <Font name="System Bold" size="28.0" />
                            </font>
                         </Label>
-                        <Label text="Admin Dashboard" textFill="#666666">
+                        <Label text="Admin Dashboard" textFill="#8a817e">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
                      </children>
                   </VBox>
-                  <Label text="Choose Your Management System" textFill="#666666">
+                  <Label text="Choose Your Management System" textFill="#8a817e">
                      <font>
                         <Font size="18.0" />
                      </font>

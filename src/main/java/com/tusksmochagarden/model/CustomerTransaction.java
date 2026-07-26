@@ -1,12 +1,12 @@
-package sample.tusksmochagarden;
+package com.tusksmochagarden.model;
 
 import java.sql.Date;
 
 /**
- * The customersData class represents the data model for a customer transaction in the Tusk's Mocha Garden application.
+ * The CustomerTransaction class represents the data model for a customer transaction in the Tusk's Mocha Garden application.
  * This class includes details such as the customer transaction ID, customer ID, total amount, date of the transaction, and the employee's username who handled the transaction.
  */
-public class customersData {
+public class CustomerTransaction {
 
     // Fields representing the customer's transaction data
     private Integer id;            // Unique identifier for the customer transaction in the database
@@ -16,7 +16,7 @@ public class customersData {
     private String emUsername;     // Username of the employee who handled the transaction
 
     /**
-     * Constructor for creating a customersData object with full transaction details.
+     * Constructor for creating a CustomerTransaction object with full transaction details.
      *
      * @param id           Unique identifier for the customer transaction.
      * @param customerID   Unique identifier for the customer.
@@ -24,7 +24,7 @@ public class customersData {
      * @param date         Date of the transaction.
      * @param emUsername   Username of the employee who handled the transaction.
      */
-    public customersData(Integer id, Integer customerID, Double total,
+    public CustomerTransaction(Integer id, Integer customerID, Double total,
                          Date date, String emUsername) {
         this.id = id;
         this.customerID = customerID;

@@ -1,12 +1,12 @@
-package sample.tusksmochagarden;
+package com.tusksmochagarden.model;
 
 import java.sql.Date;
 
 /**
- * The productData class represents the data model for a product in the Tusk's Mocha Garden application.
+ * The Product class represents the data model for a product in the Tusk's Mocha Garden application.
  * This class includes product details such as ID, name, type, stock, price, status, image, date, and quantity.
  */
-public class productData {
+public class Product {
 
     // Fields representing the product's data
     private Integer id;              // Unique identifier for the product in the database
@@ -21,7 +21,7 @@ public class productData {
     private Integer quantity;        // Quantity of the product ordered by a customer (used in the order context)
 
     /**
-     * Constructor for creating a productData object with full product details.
+     * Constructor for creating a Product object with full product details.
      *
      * @param id          Unique identifier for the product.
      * @param productId   Unique product ID.
@@ -33,7 +33,7 @@ public class productData {
      * @param image       Path to the product's image file.
      * @param date        Date when the product was added or last updated.
      */
-    public productData(Integer id, String productId, String productName,
+    public Product(Integer id, String productId, String productName,
                        String type, Integer stock, Double price,
                        String status, String image, Date date) {
         this.id = id;
@@ -48,7 +48,7 @@ public class productData {
     }
 
     /**
-     * Constructor for creating a productData object for use in order contexts.
+     * Constructor for creating a Product object for use in order contexts.
      * This constructor omits the stock and status fields, but includes quantity.
      *
      * @param id          Unique identifier for the product.
@@ -60,7 +60,7 @@ public class productData {
      * @param image       Path to the product's image file.
      * @param date        Date when the product was added or last updated.
      */
-    public productData(Integer id, String productId, String productName,
+    public Product(Integer id, String productId, String productName,
                        String type, Integer quantity, Double price,
                        String image, Date date) {
         this.id = id;

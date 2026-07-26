@@ -1,4 +1,4 @@
-package com.example.controllers;
+package com.tusksmochagarden.controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,7 +11,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import sample.tusksmochagarden.Database;
+import com.tusksmochagarden.data.Database;
+import com.tusksmochagarden.data.PasswordHasher;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -98,7 +99,7 @@ public class UsersController implements Initializable {
                 connect = Database.connectDB();
                 prepare = connect.prepareStatement(sql);
                 prepare.setString(1, user.getUsername());
-                prepare.setString(2, user.getPassword());
+                prepare.setString(2, PasswordHasher.hash(user.getPassword()));
                 prepare.setBoolean(3, user.getIsAdmin());
                 
                 int rowsAffected = prepare.executeUpdate();
@@ -196,7 +197,7 @@ public class UsersController implements Initializable {
     @FXML
     private void backToLanding(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/sample/tusksmochagarden/landing-view.fxml")));
+            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/com/tusksmochagarden/landing-view.fxml")));
             Stage stage = new Stage();
             Scene scene = new Scene(root);
             stage.setTitle("Tusks Mocha Garden - Admin Dashboard");
@@ -248,24 +249,6 @@ public class UsersController implements Initializable {
         });
 
         return dialog;
-    }
-
-    private String hashPassword(String password) {
-        try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(password.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (java.security.NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return password; // Fallback
-        }
     }
 
     private void closeDatabaseResources() {

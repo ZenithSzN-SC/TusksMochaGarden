@@ -1,6 +1,6 @@
-package sample.tusksmochagarden;
+package com.tusksmochagarden.model;
 
-public class data {
+public class AppSession {
 
     public static String username;
     public static String path;
@@ -9,5 +9,12 @@ public class data {
     public static Integer cID;
     public static Boolean isAdmin;
 
-}
+    // Session info for the POS
+    public static java.time.LocalTime loginTime;
 
+    // POS settings (per session)
+    public static boolean autoPrint = true;
+    public static boolean showVat = false;
+    public static boolean registerSounds = true;
+
+}

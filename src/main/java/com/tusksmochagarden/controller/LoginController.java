@@ -1,4 +1,4 @@
-package sample.tusksmochagarden;
+package com.tusksmochagarden.controller;
 
 import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
@@ -14,6 +14,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import com.tusksmochagarden.data.Database;
+import com.tusksmochagarden.data.PasswordHasher;
+import com.tusksmochagarden.model.AppSession;
+
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,13 +27,16 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
-public class loginController implements Initializable {
+public class LoginController implements Initializable {
 
     @FXML
     private AnchorPane si_loginForm, su_signupForm, fp_questionForm, np_newPassForm, side_form;
 
     @FXML
-    private TextField si_username, su_username, su_answer, fp_username, fp_answer;
+    private TextField si_username, su_username, su_answer, fp_username, fp_answer, si_passwordText;
+
+    @FXML
+    private Button si_eyeBtn;
 
     @FXML
     private PasswordField si_password, su_password, np_newPassword, np_confirmPassword;
@@ -38,7 +45,10 @@ public class loginController implements Initializable {
     private ComboBox<String> su_question, fp_question, su_admin;
 
     @FXML
-    private Button si_loginBtn, su_signupBtn, fp_proceedBtn, np_changePassBtn, fp_back, np_back, side_CreateBtn, side_alreadyHave;
+    private Button si_loginBtn, su_signupBtn, fp_proceedBtn, np_changePassBtn, side_CreateBtn, side_alreadyHave;
+
+    @FXML
+    private Hyperlink fp_back, np_back;
 
     private Connection connect;
     private PreparedStatement prepare;
@@ -49,6 +59,21 @@ public class loginController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         initializeQuestionLists();
+        si_passwordText.textProperty().bindBidirectional(si_password.textProperty());
+    }
+
+    @FXML
+    private void togglePassword() {
+        boolean show = !si_passwordText.isVisible();
+        si_passwordText.setVisible(show);
+        si_password.setVisible(!show);
+        if (show) {
+            si_passwordText.requestFocus();
+            si_passwordText.end();
+        } else {
+            si_password.requestFocus();
+            si_password.end();
+        }
     }
 
     private void initializeQuestionLists() {
@@ -68,8 +93,9 @@ public class loginController implements Initializable {
 
         // Bypass the database connection for a test user
         if ("testuser".equals(username) && "testpass".equals(password)) {
-            data.username = "testuser";
-            data.isAdmin = false; // Set as non-admin for testing
+            AppSession.username = "testuser";
+            AppSession.isAdmin = false; // Set as non-admin for testing
+            AppSession.loginTime = java.time.LocalTime.now();
             showAlert(Alert.AlertType.INFORMATION, "Information Message", "Successfully Logged In as Test User!");
             try {
                 loadMainForm(); // Non-admin goes directly to main form
@@ -101,20 +127,21 @@ public class loginController implements Initializable {
             if (result.next()) {
                 String storedPassword = result.getString("password");
                 boolean isAdmin = result.getBoolean("is_admin");
-                
-                // Verify password
-                if (password.equals(storedPassword)) {
-                    data.username = username;
-                    data.isAdmin = isAdmin;
-                    
-                    showAlert(Alert.AlertType.INFORMATION, "Information Message", "Successfully Logged In!");
-                    
-                    // Check if user is admin and redirect accordingly
-                    if (isAdmin) {
-                        loadLandingForm(); // Admin goes to landing page
-                    } else {
-                        loadMainForm(); // Regular user goes to main form
+
+                if (PasswordHasher.verify(password, storedPassword)) {
+                    if (!PasswordHasher.isHashed(storedPassword)) {
+                        rehashPassword(username, password);
                     }
+
+                    AppSession.username = username;
+                    AppSession.isAdmin = isAdmin;
+                    AppSession.loginTime = java.time.LocalTime.now();
+                    touchLastActive(username);
+
+                    showAlert(Alert.AlertType.INFORMATION, "Information Message", "Successfully Logged In!");
+
+                    // Both roles use the main window; it adapts to the role
+                    loadMainForm();
                 } else {
                     showAlert(Alert.AlertType.ERROR, "Error Message", "Incorrect Username/Password");
                 }
@@ -223,12 +250,9 @@ public class loginController implements Initializable {
         }
 
         try {
-            // Use hashed password for security
-            // Use plain text password (no hashing)
-            
             String updatePass = "UPDATE employee SET password = ?, question = ?, answer = ? WHERE username = ?";
             prepare = connect.prepareStatement(updatePass);
-            prepare.setString(1, np_newPassword.getText());
+            prepare.setString(1, PasswordHasher.hash(np_newPassword.getText()));
             prepare.setString(2, fp_question.getSelectionModel().getSelectedItem());
             prepare.setString(3, fp_answer.getText());
             prepare.setString(4, fp_username.getText());
@@ -262,7 +286,7 @@ public class loginController implements Initializable {
         TranslateTransition slider = new TranslateTransition(Duration.seconds(.5), side_form);
 
         if (event.getSource() == side_CreateBtn) {
-            slider.setToX(300);
+            slider.setToX(-500);
             slider.setOnFinished(e -> showSignUpForm());
         } else if (event.getSource() == side_alreadyHave) {
             slider.setToX(0);
@@ -293,13 +317,35 @@ public class loginController implements Initializable {
         fp_questionForm.setVisible(false);
     }
 
+    private void touchLastActive(String username) {
+        try (Connection c = Database.connectDB();
+             PreparedStatement ps = c.prepareStatement("UPDATE employee SET last_active = NOW() WHERE username = ?")) {
+            ps.setString(1, username);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            // column may not exist yet if migration hasn't run — not fatal
+            System.err.println("Could not update last_active: " + e.getMessage());
+        }
+    }
+
+    private void rehashPassword(String username, String rawPassword) {
+        try (Connection c = Database.connectDB();
+             PreparedStatement ps = c.prepareStatement("UPDATE employee SET password = ? WHERE username = ?")) {
+            ps.setString(1, PasswordHasher.hash(rawPassword));
+            ps.setString(2, username);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("Could not migrate password hash for " + username + ": " + e.getMessage());
+        }
+    }
+
     private void loadMainForm() throws Exception {
-        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("mainForm.fxml")));
+        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/com/tusksmochagarden/mainForm.fxml")));
         Stage stage = new Stage();
         Scene scene = new Scene(root);
         stage.setTitle("Tusks Mocha Garden");
-        stage.setMinWidth(1100);
-        stage.setMinHeight(600);
+        stage.setMinWidth(1280);
+        stage.setMinHeight(720);
         stage.setScene(scene);
         stage.show();
 
@@ -308,7 +354,7 @@ public class loginController implements Initializable {
 
     // Add new method to load landing form
     private void loadLandingForm() throws Exception {
-        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("landing-view.fxml")));
+        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/com/tusksmochagarden/landing-view.fxml")));
         Stage stage = new Stage();
         Scene scene = new Scene(root);
         stage.setTitle("Tusks Mocha Garden - Admin Dashboard");
@@ -322,10 +368,7 @@ public class loginController implements Initializable {
         String regData = "INSERT INTO employee (username, password, question, answer, is_admin, hire_date) VALUES(?,?,?,?,?,?)";
         prepare = connect.prepareStatement(regData);
         prepare.setString(1, su_username.getText());
-        
-        // Hash the password for security
-        // Store password as plain text (no hashing)
-        prepare.setString(2, su_password.getText());
+        prepare.setString(2, PasswordHasher.hash(su_password.getText()));
         
         prepare.setString(3, su_question.getSelectionModel().getSelectedItem());
         prepare.setString(4, su_answer.getText());

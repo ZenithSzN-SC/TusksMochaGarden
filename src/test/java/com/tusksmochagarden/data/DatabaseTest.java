@@ -1,4 +1,4 @@
-package sample.tusksmochagarden;
+package com.tusksmochagarden.data;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;

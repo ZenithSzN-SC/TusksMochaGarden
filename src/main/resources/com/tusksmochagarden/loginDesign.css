@@ -1,47 +1,151 @@
+/* Tusk's Mocha Garden — modern warm palette
+   bg #FAF6F4 · card #FFFFFF · primary #C4836A (hover #B37055)
+   heading #4A332A · muted #8C6D60 · field bg #FCF8F6 · field border #F0E0D8 */
+
+.root{
+    -fx-font-family: "Outfit";
+}
+
+.login-root{
+    -fx-background-color: #FAF6F4;
+}
+
 .gradient{
-    -fx-background-color: linear-gradient(to bottom right, #F6EEE0, #C38370);
+    -fx-background-color: linear-gradient(to bottom right, #E2A692 0%, #C4836A 55%, #B37055 100%);
 }
 
 .white-form{
-    -fx-background-color: #fff;
+    -fx-background-color: #FFFFFF;
+}
+
+/* Typography */
+.h1{
+    -fx-font-family: "Outfit";
+    -fx-font-size: 34px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4A332A;
 }
 
 .head-label{
-    -fx-border-color: #C38370;
-    -fx-border-width: 0 0 0 3px;
-    -fx-padding: 0 0 0 5px;
+    -fx-text-fill: #4A332A;
+    -fx-font-weight: bold;
 }
-.login-btn{
-    -fx-background-color: linear-gradient(to bottom right, #E4B7A0, #A45C40);
-    -fx-background-radius: 5px;
-    -fx-cursor: hand;
-    -fx-text-fill: #fff;
+
+.sub-label{
+    -fx-font-size: 16px;
+    -fx-text-fill: #8C6D60;
+}
+
+.field-label{
+    -fx-text-fill: #7A5C50;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.overlay-title{
+    -fx-font-family: "Outfit";
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+}
+.overlay-sub{
+    -fx-font-size: 15px;
+    -fx-text-fill: rgba(255,255,255,0.92);
+}
+.overlay-note{
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(255,255,255,0.8);
+}
+
+/* Inputs */
+.textfield{
+    -fx-background-color: #FCF8F6;
+    -fx-background-radius: 14px;
+    -fx-border-color: #F0E0D8;
+    -fx-border-radius: 14px;
+    -fx-border-width: 1px;
+    -fx-padding: 10px 14px;
+    -fx-text-fill: #4A332A;
+    -fx-prompt-text-fill: #D0B8B0;
     -fx-font-size: 14px;
 }
-.login-btn:hover{
-    -fx-background-color: linear-gradient(to bottom right, #E4D4C8, #A45C40);
-}
-.textfield{
-    -fx-background-color: transparent;
-    -fx-border-color: linear-gradient(to bottom right, #E4B7A0, #A45C40);
-    -fx-border-width: .5px;
-}
 .textfield:focused{
-    -fx-border-width: 1px;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #C4836A;
+    -fx-border-width: 1.5px;
+}
+
+.combo-box.textfield .list-cell{
+    -fx-text-fill: #4A332A;
+    -fx-background-color: transparent;
+}
+
+/* Password field with room for the eye toggle */
+.password-holder .textfield{
+    -fx-padding: 10px 44px 10px 14px;
+}
+
+.eye-btn{
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 6px;
+}
+.eye-btn .eye-shape{
+    -fx-fill: #D0B8B0;
+}
+.eye-btn:hover .eye-shape{
+    -fx-fill: #C4836A;
+}
+
+/* Buttons */
+.login-btn{
+    -fx-background-color: #C4836A;
+    -fx-background-radius: 14px;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(196,131,106,0.45), 14, 0, 0, 4);
+}
+.login-btn:hover{
+    -fx-background-color: #B37055;
+}
+.login-btn:pressed{
+    -fx-background-color: #A1644F;
+    -fx-effect: none;
 }
 
 .create-btn{
     -fx-background-color: transparent;
+    -fx-background-radius: 14px;
+    -fx-border-color: rgba(255,255,255,0.85);
+    -fx-border-width: 2px;
+    -fx-border-radius: 14px;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
     -fx-cursor: hand;
-    -fx-text-fill: #fff;
-    -fx-border-color: #fff;
-    -fx-border-width: 1px;
 }
 .create-btn:hover{
-    -fx-background-color: #fff;
-    -fx-text-fill: #000;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #FFFFFF;
+    -fx-text-fill: #C4836A;
 }
 
+.link{
+    -fx-text-fill: #C4836A;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+}
+.link:hover, .link:visited{
+    -fx-text-fill: #B37055;
+}
 
-
-
+.logo-circle{
+    -fx-background-color: rgba(255,255,255,0.15);
+    -fx-background-radius: 200px;
+    -fx-border-color: rgba(255,255,255,0.3);
+    -fx-border-radius: 200px;
+    -fx-border-width: 1px;
+}

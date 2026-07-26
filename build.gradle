@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'application'
-    id 'org.javamodularity.moduleplugin' version '1.8.12'
+    id 'org.javamodularity.moduleplugin' version '1.8.15'
     id 'org.openjfx.javafxplugin' version '0.0.13'
     id 'org.beryx.jlink' version '2.25.0'
 }
@@ -25,8 +25,8 @@ tasks.withType(JavaCompile) {
 }
 
 application {
-    mainModule = 'sample.tusksmochagarden'
-    mainClass = 'sample.tusksmochagarden.tusksMochaGardenApplication'
+    mainModule = 'com.tusksmochagarden'
+    mainClass = 'com.tusksmochagarden.app.TusksMochaGardenApplication'
 }
 
 // Add extra JVM arguments for JavaFX
@@ -41,12 +41,13 @@ run {
 }
 
 javafx {
-    version = '19'
+    version = '21.0.2'
     modules = ['javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing']
 }
 
 dependencies {
     implementation 'mysql:mysql-connector-java:8.0.33'
+    implementation 'org.mindrot:jbcrypt:0.4'
 
     implementation('org.controlsfx:controlsfx:11.1.2')
     implementation('com.dlsc.formsfx:formsfx-core:11.6.0') {

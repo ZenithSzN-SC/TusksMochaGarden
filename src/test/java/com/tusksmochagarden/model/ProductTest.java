@@ -1,4 +1,4 @@
-package sample.tusksmochagarden;
+package com.tusksmochagarden.model;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -7,10 +7,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.sql.Date;
 
 /**
- * Unit tests for productData class.
+ * Unit tests for Product class.
  * Tests the product data model functionality and validation.
  */
-public class ProductDataTest {
+public class ProductTest {
     
     @Test
     @DisplayName("Product creation with full constructor should work correctly")
@@ -27,7 +27,7 @@ public class ProductDataTest {
         Date date = new Date(System.currentTimeMillis());
         
         // Act
-        productData product = new productData(id, productId, productName, type, stock, price, status, image, date);
+        Product product = new Product(id, productId, productName, type, stock, price, status, image, date);
         
         // Assert
         assertEquals(id, product.getId());
@@ -56,7 +56,7 @@ public class ProductDataTest {
         Date date = new Date(System.currentTimeMillis());
         
         // Act
-        productData product = new productData(id, productId, productName, type, quantity, price, image, date);
+        Product product = new Product(id, productId, productName, type, quantity, price, image, date);
         
         // Assert
         assertEquals(id, product.getId());
@@ -75,7 +75,7 @@ public class ProductDataTest {
     @DisplayName("Product with valid price should be accepted")
     void testValidPrice() {
         Double validPrice = 5.99;
-        productData product = new productData(1, "PROD001", "Test Product", "Drinks", 10, validPrice, "Available", "/images/test.jpg", new Date(System.currentTimeMillis()));
+        Product product = new Product(1, "PROD001", "Test Product", "Drinks", 10, validPrice, "Available", "/images/test.jpg", new Date(System.currentTimeMillis()));
         
         assertEquals(validPrice, product.getPrice());
         assertTrue(product.getPrice() > 0, "Price should be positive");
@@ -85,7 +85,7 @@ public class ProductDataTest {
     @DisplayName("Product with valid stock should be accepted")
     void testValidStock() {
         Integer validStock = 25;
-        productData product = new productData(1, "PROD001", "Test Product", "Drinks", validStock, 5.99, "Available", "/images/test.jpg", new Date(System.currentTimeMillis()));
+        Product product = new Product(1, "PROD001", "Test Product", "Drinks", validStock, 5.99, "Available", "/images/test.jpg", new Date(System.currentTimeMillis()));
         
         assertEquals(validStock, product.getStock());
         assertTrue(product.getStock() >= 0, "Stock should be non-negative");
@@ -95,7 +95,7 @@ public class ProductDataTest {
     @DisplayName("Product data should handle null values gracefully")
     void testNullValues() {
         // Test with some null values - this tests how the class handles edge cases
-        productData product = new productData(null, null, null, null, null, null, null, null, null);
+        Product product = new Product(null, null, null, null, null, null, null, null, null);
         
         assertNull(product.getId());
         assertNull(product.getProductId());
