@@ -1,94 +1,76 @@
-# Tusks Mocha Garden - Cafe Management System
+# Tusks Mocha Garden
 
-A comprehensive cafe management system built with Java, JavaFX, and MySQL.
+A cafe management system built with Java, JavaFX, and MySQL — covering staff accounts, inventory, a point-of-sale register, order tracking, and a sales dashboard.
 
 ## Features
 
-- **User Authentication System**
-  - Login/Logout
-  - User Registration
-  - Password Recovery
+- **Authentication** — login, registration, and security-question password recovery, with bcrypt-hashed credentials.
+- **Dashboard** — daily sales stats, day-over-day trends, low-stock alerts, top sellers, and 7-day income/order charts.
+- **Inventory management** — product CRUD, stock tracking, image upload, category filters.
+- **Register (POS)** — visual menu cards, drink customization, cart management, cash/card/wallet payment, receipt printing.
+- **Order tracking** — active/completed order queues with per-order status advancement (Prep → Ready → Served).
+- **Staff management** — add/edit/remove accounts and roles (Admin/Barista).
 
-- **Dashboard**
-  - Sales Statistics
-  - Customer Metrics
-  - Income Charts
-  - Daily Sales Overview
+## Architecture
 
-- **Inventory Management**
-  - Product CRUD Operations
-  - Stock Management
-  - Image Upload for Products
-  - Product Categorization
+The codebase is layered under `com.tusksmochagarden`:
 
-- **Menu and Order Processing**
-  - Visual Menu Cards
-  - Order Management
-  - Payment Processing
-  - Receipt Generation
+- `app` — application bootstrap (`TusksMochaGardenApplication`) and startup schema migration (`SchemaUpdater`).
+- `controller` — JavaFX FXML controllers; UI state and event handling only.
+- `model` — plain data classes (`Product`, `CustomerTransaction`, `AppSession`).
+- `data` — persistence: `Database` (connection pooling), `PasswordHasher`, and repositories (`ProductRepository`, `OrderRepository`, `StaffRepository`, `DashboardRepository`) that own all SQL for their domain.
 
-- **Customer Records**
-  - Transaction History
-  - Sales Reports
+Controllers hold no JDBC — they call into repositories, which each return plain data (lists, records, or model objects) for the controller to render.
 
-## System Requirements
+## Requirements
 
-- Java 11 or higher
-- MySQL 8.0 or higher
-- JavaFX 19 or compatible version
+- Java 17+
+- MySQL 8.0+
+- Gradle (wrapper included, no local install needed)
 
-## Setup Instructions
+## Setup
 
-1. **Database Setup**
-   - Install MySQL
-   - Create a database named `tusks_mocha_garden`
-   - The application will automatically create the required tables
+1. **Database**: create a MySQL database named `tusks_mocha_garden`. The app creates/migrates its own tables on startup (see `SchemaUpdater` and `database_updates.sql` for reference).
 
-2. **Configuration**
-   - Update the database connection details in `Database.java` if needed
-   - Default credentials: 
-     - Username: root
-     - Password: MySql2025
-     - Database: tusks_mocha_garden
+2. **Credentials**: the app reads connection settings from environment variables — nothing is hardcoded:
 
-3. **Running the Application**
-   - Compile and run the application using your IDE or Gradle
-   - The main class is `tusksMochaGardenApplication.java`
+   | Variable | Default | Required |
+   |---|---|---|
+   | `DB_URL` | `jdbc:mysql://localhost:3306/tusks_mocha_garden` | no |
+   | `DB_USERNAME` | `root` | no |
+   | `DB_PASSWORD` | — | **yes** |
 
-4. **Login Credentials**
-   - For testing, you can use:
-     - Username: testuser
-     - Password: testpass
-   - Or register a new account
+   ```bash
+   export DB_URL="jdbc:mysql://localhost:3306/tusks_mocha_garden"
+   export DB_USERNAME="root"
+   export DB_PASSWORD="your-password-here"
+   ```
 
-## Project Structure
+3. **Run**:
 
-- `src/main/java/sample/tusksmochagarden/` - Java source files
-- `src/main/resources/sample/tusksmochagarden/` - FXML and CSS files
-- `lib/` - External libraries (MySQL connector)
+   ```bash
+   ./gradlew run
+   ```
 
-## Implementation Notes
+4. **Test**:
 
-For detailed information about the implementation, see the [Implementation Notes](implementation_notes.md).
+   ```bash
+   ./gradlew test
+   ```
 
-## Implementation Status
+   `LoginTest` and `DatabaseTest` exercise real queries against a live MySQL instance configured via the environment variables above.
 
-The project has been fully implemented with all the necessary functionality:
+## Project structure
 
-- ✅ Database setup with proper tables and relationships
-- ✅ User authentication with login, registration, and password recovery
-- ✅ Dashboard with sales metrics and charts
-- ✅ Inventory management (add, update, delete products)
-- ✅ Menu system with product cards and order processing
-- ✅ Customer transaction tracking and records
+- `src/main/java/com/tusksmochagarden/` — application source (`app`, `controller`, `model`, `data`)
+- `src/main/resources/com/tusksmochagarden/` — FXML views, CSS, fonts
+- `src/test/java/com/tusksmochagarden/` — JUnit 5 tests
+- `lib/` — MySQL connector JAR
 
-For more detailed information about the implementation, see the [Implementation Notes](implementation_notes.md).
+## Known limitations
 
-## Known Issues
-
-- The application might encounter JavaFX compatibility issues depending on your environment. See the Implementation Notes for troubleshooting steps.
-- The receipt generation functionality is currently a placeholder and would need further implementation for actual receipt printing or PDF generation.
+- Receipt generation writes plain-text files to a local `receipts/` directory rather than producing PDFs or sending to a physical printer.
 
 ## License
 
-This project is for educational purposes only.
+MIT — see [LICENSE](LICENSE).
