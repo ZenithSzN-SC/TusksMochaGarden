@@ -18,7 +18,7 @@ public class Database {
     // JDBC URL, username, and password
     private static final String JDBC_URL = "jdbc:mysql://localhost:3306/tusks_mocha_garden";
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "REDACTED";
+    private static final String PASSWORD = "MySql2025";
     
     // Connection pool settings
     private static final int MAX_POOL_SIZE = 10;

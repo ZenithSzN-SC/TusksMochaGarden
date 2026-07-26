@@ -48,7 +48,7 @@ A comprehensive cafe management system built with Java, JavaFX, and MySQL.
    - Update the database connection details in `Database.java` if needed
    - Default credentials: 
      - Username: root
-     - Password: REDACTED
+     - Password: MySql2025
      - Database: tusks_mocha_garden
 
 3. **Running the Application**
